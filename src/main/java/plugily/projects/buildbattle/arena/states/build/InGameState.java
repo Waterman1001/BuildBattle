@@ -90,6 +90,11 @@ public class InGameState extends PluginInGameState {
           }
 
           pluginArena.setArenaInGameState(BaseArena.ArenaInGameState.PLOT_VOTING);
+          for(Player player : pluginArena.getPlayers()){
+            player.setGameMode(GameMode.SURVIVAL);
+            player.setAllowFlight(true);
+            player.setFlying(true);
+          }
           voteForNextPlot(pluginArena);
         }
         break;
