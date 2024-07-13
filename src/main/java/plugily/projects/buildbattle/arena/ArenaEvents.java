@@ -20,6 +20,7 @@
 
 package plugily.projects.buildbattle.arena;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -46,7 +47,9 @@ import plugily.projects.buildbattle.arena.managers.plots.Plot;
 import plugily.projects.minigamesbox.api.arena.IArenaState;
 import plugily.projects.minigamesbox.api.arena.IPluginArena;
 import plugily.projects.minigamesbox.classic.arena.PluginArenaEvents;
+import plugily.projects.minigamesbox.classic.handlers.items.SpecialItemManager;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
+import plugily.projects.minigamesbox.classic.handlers.reward.RewardsFactory;
 import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 import plugily.projects.minigamesbox.classic.utils.version.events.api.PlugilyPlayerInteractEntityEvent;
@@ -621,6 +624,33 @@ public class ArenaEvents extends PluginArenaEvents {
     ItemStack drop = event.getItemDrop().getItemStack();
     if(plugin.getVoteItems().getPoints(drop) != 0) {
       event.setCancelled(true);
+    }
+  }
+
+  @EventHandler
+  public void onClickOptionsMenuItem(InventoryClickEvent event) {
+
+    if(event.getCurrentItem() == null) {
+      return;
+    }
+
+    HumanEntity humanEntity = event.getWhoClicked();
+    if(humanEntity instanceof Player) {
+      if (!plugin.getArenaRegistry().isInArena((Player) humanEntity)) {
+        return;
+      }
+
+      BaseArena baseArena = plugin.getArenaRegistry().getArena((Player) humanEntity);
+      if(baseArena == null || baseArena.getArenaState() != IArenaState.IN_GAME) {
+        return;
+      }
+
+      SpecialItemManager specialItemManager = plugin.getSpecialItemManager();
+      ItemStack optionsMenu = specialItemManager.getSpecialItemStack("OPTIONS_MENU");
+      if(event.getCurrentItem().getItemMeta().equals(optionsMenu.getItemMeta())) {
+        // Delayed task because Inventory needs time to update.
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> humanEntity.getInventory().setItem(8, specialItemManager.getRelatedSpecialItem(optionsMenu).getItemStack()), 1);
+      }
     }
   }
 
