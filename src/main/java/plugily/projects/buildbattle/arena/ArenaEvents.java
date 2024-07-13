@@ -630,7 +630,7 @@ public class ArenaEvents extends PluginArenaEvents {
   @EventHandler
   public void onClickOptionsMenuItem(InventoryClickEvent event) {
 
-    if(event.getCurrentItem() == null) {
+    if(event.getCurrentItem() == null || event.getCurrentItem().getItemMeta() == null) {
       return;
     }
 
