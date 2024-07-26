@@ -4,7 +4,7 @@
 # If you use invalid sound name or none it will silently fail without errors, just warning message
 
 '1':
-  material-name: YELLOW_TERRACOTTA
+  material-name: RED_TERRACOTTA
   displayname: "&4&lSUPER POOP"
   sound: "ENTITY_CAT_PURREOW"
 '2':
