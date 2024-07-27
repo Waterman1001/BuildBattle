@@ -103,7 +103,7 @@ public class InGameState extends PluginInGameState {
         if(arena.getTimer() <= 0) {
           calculatePlotResults(pluginArena);
           if(pluginArena.getQueue().isEmpty()) {
-            pluginArena.calculateWinnerPlot();
+            pluginArena.calculateWinnerPlots();
             adjustStatistics(pluginArena);
 
             pluginArena.teleportToWinnerPlot();
@@ -170,7 +170,7 @@ public class InGameState extends PluginInGameState {
           user.setStatistic("POINTS_HIGHEST", plot.getPoints());
         }
         user.adjustStatistic("POINTS_TOTAL", plot.getPoints());
-        if(plot == pluginArena.getWinnerPlot()) {
+        if(plot == pluginArena.getWinnerPlots()) {
           user.adjustStatistic("WINS", 1);
         } else {
           user.adjustStatistic("LOSES", 1);

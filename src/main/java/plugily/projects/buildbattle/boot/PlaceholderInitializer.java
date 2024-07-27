@@ -20,6 +20,7 @@
 
 package plugily.projects.buildbattle.boot;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import plugily.projects.buildbattle.Main;
@@ -365,9 +366,11 @@ public class PlaceholderInitializer {
         if(pluginArena == null) {
           return null;
         }
-        Plot plot = pluginArena.getWinnerPlot();
-        if(plot != null && !plot.getMembers().isEmpty() && plot.getMembers().contains(player)) {
-          return new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_WIN").asKey().arena(pluginArena).build();
+        List<Plot> winnerPlots = pluginArena.getWinnerPlots();
+        for(Plot plot : winnerPlots) {
+          if (plot != null && !plot.getMembers().isEmpty() && plot.getMembers().contains(player)) {
+            return new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_WIN").asKey().arena(pluginArena).build();
+          }
         }
         return new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_LOSE").asKey().arena(pluginArena).build();
       }
@@ -397,7 +400,14 @@ public class PlaceholderInitializer {
         if(plotIndex == -1) {
           return new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_OWN").asKey().integer(0).arena(pluginArena).build();
         }
-        return new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_OWN").asKey().integer(plotIndex + 1).arena(pluginArena).build();
+
+        int finalPlotIndex;
+        if(plotIndex > 0 && plotRanking.get(plotIndex).getPoints() == plotRanking.get(plotIndex - 1).getPoints()) {
+          finalPlotIndex = plotIndex - 1;
+        } else {
+          finalPlotIndex = plotIndex;
+        }
+        return new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_OWN").asKey().integer(finalPlotIndex + 1).arena(pluginArena).build();
       }
     });
 
@@ -419,9 +429,14 @@ public class PlaceholderInitializer {
         if(pluginArena == null) {
           return null;
         }
-        Plot plot = pluginArena.getWinnerPlot();
-        if(plot != null && !plot.getMembers().isEmpty()) {
-          return new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_WINNER").asKey().arena(pluginArena).build();
+        List<Plot> winnerPlots = pluginArena.getWinnerPlots();
+        if(winnerPlots.size() == 1) {
+          Plot plot = winnerPlots.get(0);
+          if (plot != null && !plot.getMembers().isEmpty()) {
+            return new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_WINNER").asKey().arena(pluginArena).build();
+          }
+        } else {
+          return ChatColor.GREEN + "Multiple players won BuildBattle!";
         }
         return null;
       }
@@ -451,9 +466,18 @@ public class PlaceholderInitializer {
           places = 16;
         }
         StringBuilder placeSummary = new StringBuilder();
-        for(int i = 1; i <= places; i++) {
+
+        List<Plot> plotsRanking = pluginArena.getPlotManager().getTopPlotsOrder();
+
+        for (int i = 1; i <= places; i++) {
+          int index;
+          if (i > 1 && plotsRanking.get(i-2).getPoints() == plotsRanking.get(i-1).getPoints()) {
+            index = i - 1;
+          } else {
+            index = i;
+          }
           //number = place, value = members + points
-          placeSummary.append("\n").append(new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_PLACE").asKey().integer(i).value("%arena_place_member_" + i + "% (%arena_place_points_" + i + "%)").arena(pluginArena).build());
+          placeSummary.append("\n").append(new MessageBuilder("IN_GAME_MESSAGES_GAME_END_PLACEHOLDERS_PLACE").asKey().integer(index).value("%arena_place_member_" + i + "% (%arena_place_points_" + i + "%)").arena(pluginArena).build());
         }
         return placeSummary.toString();
       }

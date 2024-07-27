@@ -34,7 +34,6 @@ import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.handlers.language.TitleBuilder;
 import plugily.projects.minigamesbox.classic.handlers.reward.RewardType;
 import plugily.projects.minigamesbox.classic.handlers.reward.RewardsFactory;
-import plugily.projects.minigamesbox.classic.utils.items.HandlerItem;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public class BaseArena extends PluginArena {
 
   private Map<Player, Plot> plotList = new HashMap<>();
 
-  private Plot winnerPlot;
+  private List<Plot> winnerPlots = new ArrayList<>();
 
   public BaseArena(String id) {
     super(id);
@@ -108,7 +107,7 @@ public class BaseArena extends PluginArena {
     spectators.clear();
     plotList.clear();
     setTheme(null);
-    winnerPlot = null;
+    winnerPlots = new ArrayList<>();
   }
 
   public List<Player> getSpectators() {
@@ -194,8 +193,12 @@ public class BaseArena extends PluginArena {
     changeArenaOptionBy("IN_PLOT_CHECKER", 1);
   }
 
-  public void calculateWinnerPlot() {
-    winnerPlot = plotManager.getTopPlotsOrder().get(0);
+  public void calculateWinnerPlots() {
+      for(Plot plot : plotManager.getTopPlotsOrder()) {
+          if(plotManager.getTopPlotsOrder().get(0).getPoints() == plot.getPoints()) {
+              winnerPlots.add(plot);
+          }
+      }
   }
 
   public void executeEndRewards() {
@@ -204,16 +207,29 @@ public class BaseArena extends PluginArena {
 
     List<Plot> plotsRanking = plotManager.getTopPlotsOrder();
 
-    plotsRanking.forEach(plot -> plot.getMembers().forEach(player -> rewards.performReward(player, this, placeRewardType, plotsRanking.indexOf(plot) + 1)));
+    // To make sure players that end the same place receive the same rewards.
+    for (int i = 0; i < plotsRanking.size(); i++) {
+      int rewardIndex;
+      if (i >= 1 && plotsRanking.get(i).getPoints() == plotsRanking.get(i - 1).getPoints()) {
+        rewardIndex = i;
+      } else {
+        rewardIndex = i + 1;
+      }
+      plotsRanking.get(i).getMembers().forEach(player -> rewards.performReward(player, this, placeRewardType, rewardIndex));
+    }
+
     plugin.getRewardsHandler().performReward(this, plugin.getRewardsHandler().getRewardType("END_GAME"));
   }
 
   public void teleportToWinnerPlot() {
-    Location winnerLocation = winnerPlot.getTeleportLocation();
-    String formattedMembers = winnerPlot.getFormattedMembers();
+    Location winnerLocation = winnerPlots.get(0).getTeleportLocation();
+    StringBuilder formattedMembers = new StringBuilder();
+    for(Plot plot : winnerPlots) {
+      formattedMembers.append(plot.getFormattedMembers());
+    }
     for(Player player : getPlayers()) {
       VersionUtils.teleport(player, winnerLocation);
-      new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_WINNER").asKey().player(player).value(formattedMembers).sendPlayer();
+      new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_WINNER").asKey().player(player).value(formattedMembers.toString()).sendPlayer();
     }
   }
 
@@ -260,12 +276,12 @@ public class BaseArena extends PluginArena {
     return plotList.get(player);
   }
 
-  public Plot getWinnerPlot() {
-    return winnerPlot;
+  public List<Plot> getWinnerPlots() {
+    return winnerPlots;
   }
 
-  public void setWinnerPlot(Plot winnerPlot) {
-    this.winnerPlot = winnerPlot;
+  public void setWinnerPlot(List<Plot> winnerPlots) {
+    this.winnerPlots = winnerPlots;
   }
 
 }

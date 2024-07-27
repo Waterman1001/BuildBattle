@@ -102,7 +102,7 @@ public class InGameState extends PluginInGameState {
         break;
       case PLOT_VOTING:
         if(pluginArena.getRound() + 1 > pluginArena.getPlotList().size() * pluginArena.getArenaOption("GTB_ROUNDS_PER_PLOT")) {
-          pluginArena.calculateWinnerPlot();
+          pluginArena.calculateWinnerPlots();
           adjustStatistics(pluginArena);
 
           pluginArena.teleportToWinnerPlot(); //todo save built plot from winner
@@ -272,7 +272,7 @@ public class InGameState extends PluginInGameState {
         }
         */
         user.adjustStatistic("POINTS_TOTAL", plot.getPoints());
-        if(plot == pluginArena.getWinnerPlot()) {
+        if(plot == pluginArena.getWinnerPlots().get(0)) {
           user.adjustStatistic("WINS", 1);
         } else {
           user.adjustStatistic("LOSES", 1);
