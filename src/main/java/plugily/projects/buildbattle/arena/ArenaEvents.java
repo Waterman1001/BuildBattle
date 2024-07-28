@@ -504,6 +504,28 @@ public class ArenaEvents extends PluginArenaEvents {
   }
 
   @EventHandler
+  public void onPotionThrow(PotionSplashEvent event) {
+    if(event.getEntity().getShooter() instanceof Player) {
+      BaseArena arena = plugin.getArenaRegistry().getArena((Player) event.getEntity().getShooter());
+      if (arena == null || arena.getArenaState() != IArenaState.IN_GAME) {
+        return;
+      }
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler
+  public void onLingeringPotionThrow(LingeringPotionSplashEvent event) {
+    if(event.getEntity().getShooter() instanceof Player) {
+      BaseArena arena = plugin.getArenaRegistry().getArena((Player) event.getEntity().getShooter());
+      if (arena == null || arena.getArenaState() != IArenaState.IN_GAME) {
+        return;
+      }
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler
   public void onWaterFlowEvent(BlockFromToEvent event) {
     Location toBlock = event.getToBlock().getLocation();
     Location blockLoc = event.getBlock().getLocation();
